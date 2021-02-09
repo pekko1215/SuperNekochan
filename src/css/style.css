@@ -1,0 +1,395 @@
+
+body {
+    margin: 0;
+    background-color: #ccc;
+    /* font-family: "V-GERB"; */
+    white-space: nowrap;
+    font-size: 0;
+}
+
+#pixiview {
+    margin-left: 118px;
+    margin-top: 39px;
+    z-index: 4;
+}
+
+.seg {
+    border-radius: 5px;
+    border: solid gray 2px;
+    padding: 2px 5px 2px 5px;
+    background: black;
+}
+
+#one {
+    right: 31px;
+    position: absolute;
+    bottom: 80px;
+}
+
+#creditSegment {
+    z-index: 10;
+    left: 42px;
+    top: 343px;
+    position: absolute;
+}
+
+#paySegment {
+    position: absolute;
+    left: 128px;
+    top: 343px;
+    z-index: 10;
+}
+
+#effectSegment1 {
+    position: absolute;
+    right: 25px;
+    top: 343px;
+    z-index: 10;
+}
+
+#effectSegment2 {
+    position: absolute;
+    left: 364px;
+    top: 343px;
+    z-index: 10;
+    transform: scale(2);
+}
+
+#GameData {
+    position: absolute;
+    background-color: black;
+    color: white;
+    left: calc(939px - 200px);
+    top: 0;
+    width: 200px;
+    font-size: 10pt;
+    z-index: 8;
+}
+
+table {
+    border: double;
+}
+
+td,
+tr,
+th {
+    border: solid 1px;
+}
+
+#kokuti {
+    position: absolute;
+    left: 396px;
+    top: -55px;
+}
+
+.lamp {
+    filter: grayscale(100%);
+    transition: filter 0.2s;
+}
+
+.lamp.show {
+    filter: grayscale(0%);
+}
+
+.lamp.show.rainbow {
+    animation: rainbow-flash 0.5s infinite;
+}
+
+#panel {
+    z-index: 1;
+    position: relative;
+}
+
+#dataCounter {
+    min-height: 146px;
+    display: flex;
+    flex-flow: row-reverse;
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+
+#dataCounter .tower {
+    margin-top: 8px;
+    width: 32px;
+    vertical-align: bottom;
+    display: inline-block;
+    margin-right: 2px;
+}
+
+#dataCounter .floor.red {
+    background: darkred;
+}
+
+#dataCounter .floor.green {
+    background: darkgreen;
+}
+
+#dataCounter .tower .floor {
+    width: 100%;
+    height: 8px;
+    margin-bottom: 3px;
+}
+
+#dataCounter .tower .type {
+    text-align: center;
+    font-size: 11pt;
+    border-top: solid 1px;
+}
+
+#dataCounter .tower .count {
+    text-align: center;
+    font-size: 11pt;
+}
+
+#display {
+    width: 250px;
+    height: 400px;
+    background: black;
+    border: solid darkblue 4px;
+    box-sizing: border-box;
+    display: inline-block;
+    position: relative;
+}
+
+#slot {
+    position: relative;
+    display: inline-block;
+    background-color: #252525;
+    width: 900px;
+    height: 420px;
+}
+
+.game-count {
+    position: absolute;
+    bottom: 0;
+    color: white;
+    width: 100%;
+    font-size: 20pt;
+    text-align: center;
+    box-sizing: border-box;
+    border-top: solid 2px gray;
+}
+
+.ticket-area {
+    width: 80%;
+    height: 40%;
+    border: solid 1px gray;
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin: auto;
+    top: 5%;
+    display: flex;
+    flex-flow: column;
+    justify-content: space-around;
+    text-align: center;
+}
+
+.ticket {}
+
+.ticket-area .ticket {
+    background-image: url(/../static/img/nabi/ticket.png);
+    width: 60%;
+    flex-grow: 1;
+    background-size: contain;
+    position: relative;
+    margin-left: 22px;
+}
+
+.ticket-area .ticket::after {
+    content: '×'attr(data-count);
+    font-size: 13pt;
+    color: white;
+    position: absolute;
+    top: 22px;
+    text-align: left;
+    width: 50px;
+    left: 93px;
+}
+
+.ticket.level2 {
+    filter: hue-rotate(30deg);
+}
+
+.ticket.level3 {
+    filter: hue-rotate(280deg);
+}
+
+.ticket.get {
+    animation: ticket-get 1s;
+}
+
+@keyframes ticket-get {
+    0% {
+        transform: none;
+    }
+    20% {
+        transform: scale(1.3);
+    }
+    90% {
+        transform: scale(1.3);
+    }
+    100% {
+        transform: none;
+    }
+}
+
+#display.level1,
+#display.level2,
+#display.level3 {
+    animation: zentyo infinite 5s linear;
+}
+
+#display.level1 {
+    background-color: rgb(0, 0, 40);
+}
+
+#display.level2 {
+    background-color: rgb(0, 40, 0);
+}
+
+#display.level3 {
+    background-color: rgb(40, 0, 0);
+}
+
+@keyframes zentyo {
+    0% {
+        filter: brightness(1);
+    }
+    25% {
+        filter: brightness(0.8);
+    }
+    50% {
+        filter: brightness(1);
+    }
+    75% {
+        filter: brightness(1.2);
+    }
+    100% {
+        filter: brightness(1);
+    }
+}
+
+#title {
+    width: 100%;
+    position: absolute;
+    top: 9%;
+    text-align: center;
+}
+
+#title #dreamChance {
+    color: gold;
+    display: initial;
+    font-size: 22pt;
+    font-weight: bold;
+    -webkit-text-stroke: 1px yellow;
+}
+
+#ticketBuffer {
+    width: 90%;
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin: auto;
+    top: 40%;
+    height: 140px;
+    /* border: 1px gray solid; */
+    white-space: normal;
+}
+
+#ticketBuffer .ticket {
+    height: 44px;
+    display: inline-block;
+    margin-left: -83px;
+    transform: translateX(59px) translateY(12px);
+    margin-top: -16px;
+}
+
+#ticketBuffer .ticket.animation {
+    animation: ticket-animation 2s linear forwards;
+    position: absolute;
+    z-index: 5;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 50px;
+    margin: auto auto;
+    transform: none;
+}
+
+@keyframes ticket-animation {
+    50% {
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        margin: auto;
+        transform: scale(3);
+        opacity: 1;
+    }
+    80% {
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        margin: auto;
+        transform: scale(3);
+        opacity: 1;
+    }
+    100% {
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        margin: auto;
+        transform: scale(3);
+        opacity: 0;
+    }
+}
+
+#plusGameCount {
+    font-size: 40pt;
+    color: red;
+    font-weight: bold;
+    -webkit-text-stroke: 2px orange;
+    width: 100%;
+    text-align-last: justify;
+    position: absolute;
+    font-family: "V-GERB";
+    top: 20%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#plusGameCount span {
+    width: 32px;
+}
+
+#nabi1 {}
+
+#nabi2 {}
+
+#nabi3 {}
+
+.nabi {
+    filter: brightness(30%);
+}
+
+.nabi.on {
+    filter: brightness(200%);
+}
+
+#nabiArea {
+    display: inline-flex;
+    height: 400px;
+    flex-flow: column;
+    justify-content: space-around;
+    top: 0;
+    position: absolute;
+    background-color: #252525;
+}
+
+#slotExplanation {
+    font-size: 8pt;
+}
