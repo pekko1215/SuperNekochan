@@ -1,12 +1,20 @@
 import { SlotFlashController } from "./FlashController";
 import { Flash } from "./FlashReservation";
-import { KeyBoard, KeyConfig } from "./KeyBoard";
+import { KeyBoard, KeyConfig, KeyListener } from "./KeyBoard";
 import { PanelData } from "./PanelData";
 import { ReelControl } from "./ReelControl";
 import { HitYakuData, SlotReelController } from "./ReelController";
 import { SlotEventEmitter, SlotEventListener, SlotEventPayload } from "./SlotEventListener";
 import { SlotStatus, SystemStatus } from "./Status";
 import { SlotViewController } from "./ViewController";
+
+type KeyTypes =
+    | "almighty"
+    | "left"
+    | "center"
+    | "right"
+    | "lever"
+    | "bet";
 
 export abstract class SlotModule extends SlotEventEmitter {
     events = new Map<string, SlotEventListener[]>();
@@ -17,8 +25,9 @@ export abstract class SlotModule extends SlotEventEmitter {
     viewController: SlotViewController;
     reelController!: SlotReelController;
     zyunjo: number[] | null = null;
-    pushEvent: { almighty: () => void; left: () => void; center: () => void; right: () => void; lever: () => void; bet: () => void; } | null = null;
+    pushEvent: { [key in KeyTypes]: () => void } | null = null;
     freezeFlag: boolean = false;
+    keyListeners: { [key in KeyTypes]: KeyListener } | null = null;
     constructor(panelData: PanelData, reelControl: ReelControl, defaultFlash: Flash) {
         super();
         this.panelData = panelData;
@@ -145,6 +154,15 @@ export abstract class SlotModule extends SlotEventEmitter {
             bet: betKeyListener.press
         };
 
+        this.keyListeners = {
+            almighty: allKeyListener,
+            left: leftKeyListener,
+            center: centerKeyListener,
+            right: rightkeyListener,
+            lever: leverKeyListener,
+            bet: betKeyListener
+        }
+
     }
     async update() {
         let { slotStatus } = this;
@@ -163,6 +181,7 @@ export abstract class SlotModule extends SlotEventEmitter {
             case SystemStatus.Beted:
                 break;
             case SystemStatus.LeverOn:
+                slotStatus.isReplay = false
                 break;
             case SystemStatus.LeverWait:
                 break
@@ -195,28 +214,46 @@ export abstract class SlotModule extends SlotEventEmitter {
             case SystemStatus.AllReelStop:
                 slotStatus.systemStatus = SystemStatus.AllReelStopWait;
                 let hitYaku = this.reelController.getHitYakus()
-                let payData: any = await this.onHitCheck(hitYaku);
+                slotStatus.payData = await this.onHitCheck(hitYaku);
                 this.emit("allReelStop", new class implements SlotEventPayload {
-                    data = payData;
+                    data = slotStatus.payData;
                     listener?: SlotEventListener;
                 });
 
-
+                slotStatus.systemStatus = SystemStatus.PayWait;
+                break
+            case SystemStatus.PayWait:
+                let loopFlag = false;
+                for (let key in this.keyListeners!) {
+                    if (this.keyListeners[key as KeyTypes].isDown) {
+                        loopFlag = true;
+                        break;
+                    }
+                }
+                if (loopFlag) break
                 slotStatus.systemStatus = SystemStatus.Pay;
-                let { isReplay } = await this.onPay(payData);
+                break
+            case SystemStatus.Pay:
+                slotStatus.systemStatus = SystemStatus.Paying;
+                let { isReplay } = await this.onPay(slotStatus.payData);
                 slotStatus.isReplay = isReplay;
-                await this.onPayEnd(payData);
+                slotStatus.systemStatus = SystemStatus.PayEnd;
+                break
+            case SystemStatus.Paying:
+                break
+            case SystemStatus.PayEnd:
+                await this.onPayEnd(slotStatus.payData);
                 this.slotStatus.systemStatus = SystemStatus.BetWait;
                 this.emit("payEnd")
-                if (isReplay) {
+                if (slotStatus.isReplay) {
                     await this.onReplay();
                 } else {
                     await this.onBetReset();
                 }
         }
     }
-    abstract async onPay(any: any): Promise<{ isReplay: boolean }>;
-    abstract async onPayEnd(any: any): Promise<void>;
+    abstract onPay(any: any): Promise<{ isReplay: boolean }>;
+    abstract onPayEnd(any: any): Promise<void>;
     async onBetReset() {
         this.slotStatus.betCoin = 0
     }
@@ -225,10 +262,10 @@ export abstract class SlotModule extends SlotEventEmitter {
         await this.onBet();
         this.slotStatus.systemStatus = SystemStatus.Beted
     }
-    abstract async onReelStop(number: number): Promise<void>;
-    abstract async onHitCheck(hitYakuDatas: HitYakuData[]): Promise<any>;
-    abstract async onBet(): Promise<void>;
-    abstract async onBetCoin(coin: any): Promise<void>;
+    abstract onReelStop(number: number): Promise<void>;
+    abstract onHitCheck(hitYakuDatas: HitYakuData[]): Promise<any>;
+    abstract onBet(): Promise<void>;
+    abstract onBetCoin(coin: any): Promise<void>;
     async betCoin(coin: number): Promise<boolean> {
         if (this.freezeFlag) { return false }
         if (this.slotStatus.systemStatus !== SystemStatus.BetWait) {

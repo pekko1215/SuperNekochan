@@ -1,6 +1,12 @@
 import { SlotModule } from "./SlotModule";
 
 
+
+
+
+
+
+
 export enum SystemStatus {
     BetWait,
     Beted,
@@ -15,7 +21,9 @@ export enum SystemStatus {
     AllReelStopWait,
     Pay,
     PayEnd,
-    Beting
+    Beting,
+    PayWait,
+    Paying
 }
 
 export class SlotStatus {
@@ -34,6 +42,7 @@ export class SlotStatus {
     isReplay: boolean = false;
     bonusData?: any;
     RTData?: any;
+    payData?: any;
 
     constructor(slotModule: SlotModule, waitTime = 0) {
         this.slotModule = slotModule;

@@ -38,6 +38,7 @@ sounder.addFile("sound/countup2End.wav", "countUp2End").addTag("se");
 
 sounder.addFile("sound/atstart.wav", "atStart").addTag("se");
 sounder.addFile("sound/athit.wav", "atHit").addTag("se");
+sounder.addFile("sound/SegStop.mp3", "SegStop").addTag("se");
 
 sounder.addFile("sound/cd7.wav", "CD7").addTag("bgm")
 sounder.addFile("sound/at1.wav", "AT1").addTag("bgm")

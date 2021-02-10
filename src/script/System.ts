@@ -4,15 +4,15 @@ import { ControlName } from "./datas/Control";
 import { colorData, flashData } from "./datas/Flash";
 import { LotData } from "./datas/Lot";
 import { panelData } from "./datas/Panel";
-import {  DefaultRT, RT, RTData } from "./datas/RT";
+import { DefaultRT, RT, RTData } from "./datas/RT";
 import { sounder } from "./datas/Sound";
 import { yakuData } from "./datas/Yaku";
-import { EffectManager } from "./Effect";
+import { EffectManager, NormalEffect } from "./Effect";
 import { LotBase, Lotter } from "./library/Lottery";
 import { Flash, Matrix, PanelData, ReelControl, SlotEvent, SlotModule } from "./library/SlotModule";
 import { ControlMode, HitYakuData } from "./library/SlotModule/ReelController";
 import { SystemStatus } from "./library/SlotModule/Status";
-import {  RandomChoice, Sleep } from "./Utilities";
+import { RandomChoice, Sleep } from "./Utilities";
 
 export type GameMode = 'Normal' | 'BIG' | 'REG';
 
@@ -22,7 +22,7 @@ export class SlotClass extends SlotModule {
     isLoaded = false;
     gameMode: GameMode = 'Normal'
     bonusFlag: BonusFlag = null;
-    maxPayCoin = [15,15,8]
+    maxPayCoin = [15, 15, 8]
     effectManager: EffectManager = new EffectManager();
     options: {
         isDummyBet: boolean,
@@ -149,6 +149,7 @@ export class SlotClass extends SlotModule {
         let currentBonus = this.slotStatus.bonusData;
         this.slotStatus.bonusData = null;
         this.bonusFlag = null;
+        this.effectManager.Segments.DekaSeg.reset();
 
         SaveData.bonusEnd();
 
@@ -192,6 +193,9 @@ export class SlotClass extends SlotModule {
             }
             payCoin += p;
             let lineMatrix = yaku.flashLine || matrix;
+            lineMatrix = lineMatrix.map((v, x, y) => {
+                return lineMatrix.get(y, x)
+            })
 
             // 成立役フラッシュの合成
             flashMatrix = lineMatrix.copy();
@@ -207,13 +211,17 @@ export class SlotClass extends SlotModule {
                     this.bonusFlag = null;
                     SaveData.bonusStart('BIG')
                     this.lastBonus = "BIG";
+                    (this.effectManager.currentEffect as NormalEffect).isKokutid = false;
+                    this.effectManager.Segments.DekaSeg.reset();
                     break
                 case 'REG':
                     this.slotStatus.bonusData = new BigBonus5('REG', 90);
                     this.setGamemode('REG');
                     this.bonusFlag = null;
                     this.lastBonus = "REG";
-                    SaveData.bonusStart('REG')
+                    SaveData.bonusStart('REG');
+                    (this.effectManager.currentEffect as NormalEffect).isKokutid = false;
+                    this.effectManager.Segments.DekaSeg.reset();
                     break
             }
 
@@ -233,7 +241,7 @@ export class SlotClass extends SlotModule {
                 })();
         }
 
-        if(payCoin > this.maxPayCoin[this.slotStatus.betCoin - 1]) payCoin = this.maxPayCoin[this.slotStatus.betCoin - 1];
+        if (payCoin > this.maxPayCoin[this.slotStatus.betCoin - 1]) payCoin = this.maxPayCoin[this.slotStatus.betCoin - 1];
 
         return { payCoin, replayFlag, hitYakus: hitYakuDatas, dummyReplayFlag };
     }

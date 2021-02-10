@@ -48,7 +48,7 @@ export const colorData: { [key: string]: FlashColor } = {
     }
 }
 
-export const flashData: { [key: string]: Flash } = {
+export const flashData = {
     default: new Flash({
         back: Matrix.from(Array(3).fill(Array(3).fill(colorData.DEFAULT_B))),
         front: Matrix.from(Array(3).fill(Array(3).fill(colorData.DEFAULT_F)))
@@ -58,11 +58,7 @@ export const flashData: { [key: string]: Flash } = {
         front: Matrix.from(Array(3).fill(Array(3).fill(colorData.RED_B)))
     }),
     syoto: new Flash({
-        back: Matrix.from([
-            [colorData.SYOTO_B, colorData.SYOTO_B, colorData.SYOTO_B],
-            [colorData.SYOTO_B, colorData.SYOTO_B, colorData.SYOTO_B],
-            [colorData.SYOTO_B, colorData.SYOTO_B, colorData.SYOTO_B]
-        ]),
+        back: Matrix.from(Array(3).fill(Array(3).fill(colorData.DEFAULT_B))),
         front: Matrix.from(Array(3).fill(Array(3).fill(colorData.SYOTO_F)))
     }),
     BlueFlash: new Flash({

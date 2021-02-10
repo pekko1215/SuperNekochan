@@ -16,7 +16,7 @@ export const LotData: { [key in GameMode]: LotBase[] } = {
         value: 1 / 21
     }, {
         name: 'BIG',
-        value: 1 / 211
+        value: 1 / 221
     }, {
         name: 'REG',
         value: 1 / 200
