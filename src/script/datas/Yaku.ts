@@ -140,5 +140,10 @@ export const yakuData: YakuData[] = [{
     name: "チェリー",
     pay: [8, 0, 0],
     flashLine: DummyFlash.なし
+},
+{
+    name: "チェリー",
+    pay: [8, 0, 0],
+    flashLine: DummyFlash.なし
 }
 ]

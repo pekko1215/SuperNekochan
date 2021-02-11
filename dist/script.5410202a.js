@@ -51303,6 +51303,10 @@ const yakuData = [{
   name: "チェリー",
   pay: [8, 0, 0],
   flashLine: DummyFlash.なし
+}, {
+  name: "チェリー",
+  pay: [8, 0, 0],
+  flashLine: DummyFlash.なし
 }];
 exports.yakuData = yakuData;
 },{"../library/SlotModule":"script/library/SlotModule/index.ts"}],"script/library/external/SevenSegment.ts":[function(require,module,exports) {
