@@ -64,6 +64,16 @@ document.getElementById('kakurituButton')?.addEventListener('click', e => {
     }
 })
 
+document.getElementById('kinparuButton')?.addEventListener('click', e => {
+    let target = e.target as HTMLElement;
+    Slot.kinparuMode = !Slot.kinparuMode;
+    if (Slot.kinparuMode) {
+        target.innerText = "キンパルモード ON"
+    } else {
+        target.innerText = "キンパルモード OFF"
+    }
+})
+
 window.addEventListener("unload", () => {
     Save();
 });

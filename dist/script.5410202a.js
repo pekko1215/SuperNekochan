@@ -164,7 +164,7 @@ var _ = require(".");
 
 var _Lot = require("./datas/Lot");
 
-var _document$getElementB, _document$getElementB2;
+var _document$getElementB, _document$getElementB2, _document$getElementB3;
 
 const $SlotData = document.querySelector('#slotLogs');
 const SL = [];
@@ -227,6 +227,16 @@ let isUp = false;
     });
 
     target.innerText = "確率UP OFF";
+  }
+});
+(_document$getElementB3 = document.getElementById('kinparuButton')) === null || _document$getElementB3 === void 0 ? void 0 : _document$getElementB3.addEventListener('click', e => {
+  let target = e.target;
+  _.Slot.kinparuMode = !_.Slot.kinparuMode;
+
+  if (_.Slot.kinparuMode) {
+    target.innerText = "キンパルモード ON";
+  } else {
+    target.innerText = "キンパルモード OFF";
   }
 });
 window.addEventListener("unload", () => {
@@ -52210,12 +52220,15 @@ class SlotClass extends _SlotModule.SlotModule {
     this.gameMode = 'Normal';
     this.bonusFlag = null;
     this.maxPayCoin = [15, 15, 8];
+    this.kinparuMode = false;
     this.effectManager = new _Effect.EffectManager();
     this.options = {
       isDummyBet: false,
       leverEffect: null
     };
     this.lastBonus = null;
+    this.stockList = [...Array((0, _Utilities.Rand)(2)).keys()].map(v => (0, _Utilities.RandomChoice)(["BIG", "REG"]));
+    this.bonusRT = -1;
     this.slotStatus.RTData = _RT.RTData;
     this.eventRegister();
   }
@@ -52519,6 +52532,10 @@ class SlotClass extends _SlotModule.SlotModule {
     lot = this.slotStatus.RTData.rt.onLot(lot) || lot;
     this.effectManager.pushOrder = null;
 
+    if (this.gameMode === "Normal" && this.kinparuMode) {
+      lot = this.kinparuLot(lot);
+    }
+
     switch (this.gameMode) {
       case 'Normal':
         switch ((_lot = lot) === null || _lot === void 0 ? void 0 : _lot.name) {
@@ -52579,6 +52596,128 @@ class SlotClass extends _SlotModule.SlotModule {
     this.effectManager.onLot(lot, ret, this.gameMode, this.bonusFlag);
     console.log((_lot2 = lot) === null || _lot2 === void 0 ? void 0 : _lot2.name, _Control.ControlName[ret], this);
     return ret;
+  }
+
+  kinparuLot(lot) {
+    const KinparuTable = {
+      NoStock: [{
+        game: 0,
+        lot: 0
+      }, {
+        game: 8,
+        lot: 71.5
+      }, {
+        game: 127,
+        lot: 13.7
+      }, {
+        game: 256,
+        lot: 4.7
+      }, {
+        game: 512,
+        lot: 7.8
+      }, {
+        game: 768,
+        lot: 1.6
+      }, {
+        game: 1024,
+        lot: 0.8
+      }],
+      HasStock: [{
+        game: 0,
+        lot: 0
+      }, {
+        game: 8,
+        lot: 9.4
+      }, {
+        game: 16,
+        lot: 16.0
+      }, {
+        game: 24,
+        lot: 18.4
+      }, {
+        game: 32,
+        lot: 15.4
+      }, {
+        game: 40,
+        lot: 9.4
+      }, {
+        game: 48,
+        lot: 4.7
+      }, {
+        game: 64,
+        lot: 5.1
+      }, {
+        game: 80,
+        lot: 3.5
+      }, {
+        game: 96,
+        lot: 2.7
+      }, {
+        game: 127,
+        lot: 3.5
+      }, {
+        game: 128,
+        lot: 0.4
+      }, {
+        game: 256,
+        lot: 3.9
+      }, {
+        game: 512,
+        lot: 5.5
+      }, {
+        game: 768,
+        lot: 1.2
+      }, {
+        game: 1024,
+        lot: 0.8
+      }]
+    };
+
+    const LotRTGame = list => {
+      let sum = list.reduce((a, b) => {
+        return a + b.lot;
+      }, 0);
+      let r = Math.random() * sum;
+      return list.find(lot => {
+        r -= lot.lot;
+        return r < 0;
+      });
+    };
+
+    if (this.bonusFlag === null) {
+      if (this.bonusRT === -1 && this.stockList.length !== 0 && this.bonusFlag === null) {
+        let rtBase = LotRTGame(KinparuTable.HasStock);
+        let idx = KinparuTable.HasStock.findIndex(v => v === rtBase);
+        let prevRtBase = KinparuTable.HasStock[idx - 1];
+        this.bonusRT = (0, _Utilities.Rand)(rtBase.game - prevRtBase.game, prevRtBase.game);
+      }
+
+      if (this.bonusRT !== -1) {
+        if (this.bonusRT === 0) {
+          this.bonusFlag = this.stockList.shift();
+          this.bonusRT = -1;
+        } else {
+          this.bonusRT--;
+        }
+      }
+    }
+
+    if (lot.name === "BIG" || lot.name === "REG") {
+      this.stockList.push(lot.name);
+
+      if (this.bonusRT === -1) {
+        let rtBase = LotRTGame(KinparuTable.NoStock);
+        let idx = KinparuTable.NoStock.findIndex(v => v === rtBase);
+        let prevRtBase = KinparuTable.NoStock[idx - 1];
+        this.bonusRT = (0, _Utilities.Rand)(rtBase.game - prevRtBase.game, prevRtBase.game);
+      }
+
+      return {
+        name: "はずれ"
+      };
+    }
+
+    return lot;
   }
 
   setGamemode(mode) {

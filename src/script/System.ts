@@ -12,7 +12,7 @@ import { LotBase, Lotter } from "./library/Lottery";
 import { Flash, Matrix, PanelData, ReelControl, SlotEvent, SlotModule } from "./library/SlotModule";
 import { ControlMode, HitYakuData } from "./library/SlotModule/ReelController";
 import { SystemStatus } from "./library/SlotModule/Status";
-import { RandomChoice, Sleep } from "./Utilities";
+import { Rand, RandomChoice, Sleep } from "./Utilities";
 
 export type GameMode = 'Normal' | 'BIG' | 'REG';
 
@@ -23,6 +23,7 @@ export class SlotClass extends SlotModule {
     gameMode: GameMode = 'Normal'
     bonusFlag: BonusFlag = null;
     maxPayCoin = [15, 15, 8]
+    kinparuMode = false;
     effectManager: EffectManager = new EffectManager();
     options: {
         isDummyBet: boolean,
@@ -284,6 +285,10 @@ export class SlotClass extends SlotModule {
         lot = (this.slotStatus.RTData.rt as RT).onLot(lot) || lot
         this.effectManager.pushOrder = null;
 
+        if (this.gameMode === "Normal" && this.kinparuMode) {
+            lot = this.kinparuLot(lot);
+        }
+
         switch (this.gameMode) {
             case 'Normal':
                 switch (lot?.name) {
@@ -347,6 +352,134 @@ export class SlotClass extends SlotModule {
 
         console.log(lot?.name, ControlName[ret], this);
         return ret;
+    }
+    stockList: BonusFlag[] = [...Array(Rand(2)).keys()].map(v => RandomChoice(["BIG", "REG"]));
+    bonusRT = -1;
+    kinparuLot(lot: LotBase): LotBase {
+        interface StockRT {
+            game: number;
+            lot: number;
+        }
+        const KinparuTable: {
+            NoStock: StockRT[],
+            HasStock: StockRT[]
+        } = {
+            NoStock: [{
+                game: 0,
+                lot: 0
+            }, {
+                game: 8,
+                lot: 71.5
+            }, {
+                game: 127,
+                lot: 13.7
+            }, {
+                game: 256,
+                lot: 4.7
+            }, {
+                game: 512,
+                lot: 7.8
+            }, {
+                game: 768,
+                lot: 1.6
+            }, {
+                game: 1024,
+                lot: 0.8
+            }],
+            HasStock: [{
+                game: 0,
+                lot: 0
+            }, {
+                game: 8,
+                lot: 9.4
+            }, {
+                game: 16,
+                lot: 16.0
+            }, {
+                game: 24,
+                lot: 18.4
+            }, {
+                game: 32,
+                lot: 15.4
+            }, {
+                game: 40,
+                lot: 9.4
+            }, {
+                game: 48,
+                lot: 4.7
+            }, {
+                game: 64,
+                lot: 5.1
+            }, {
+                game: 80,
+                lot: 3.5
+            }, {
+                game: 96,
+                lot: 2.7
+            }, {
+                game: 127,
+                lot: 3.5
+            }, {
+                game: 128,
+                lot: 0.4
+            }, {
+                game: 256,
+                lot: 3.9
+            }, {
+                game: 512,
+                lot: 5.5
+            }, {
+                game: 768,
+                lot: 1.2
+            }, {
+                game: 1024,
+                lot: 0.8
+            }]
+        }
+
+        const LotRTGame = (list: StockRT[]) => {
+            let sum = list.reduce((a, b) => {
+                return a + b.lot;
+            }, 0)
+            let r = Math.random() * sum;
+            return list.find(lot => {
+                r -= lot.lot;
+                return r < 0;
+            })
+        }
+        if (this.bonusFlag === null) {
+
+            if (this.bonusRT === -1 && this.stockList.length !== 0 && this.bonusFlag === null) {
+                let rtBase = LotRTGame(KinparuTable.HasStock)!;
+                let idx = KinparuTable.HasStock.findIndex(v => v === rtBase);
+                let prevRtBase = KinparuTable.HasStock[idx - 1]!;
+                this.bonusRT = Rand(rtBase.game - prevRtBase.game, prevRtBase.game);
+            }
+
+            if (this.bonusRT !== -1) {
+                if (this.bonusRT === 0) {
+                    this.bonusFlag = this.stockList.shift()!;
+                    this.bonusRT = -1;
+                } else {
+                    this.bonusRT--;
+                }
+            }
+        }
+
+
+        if (lot.name === "BIG" || lot.name === "REG") {
+            this.stockList.push(lot.name);
+            if (this.bonusRT === -1) {
+                let rtBase = LotRTGame(KinparuTable.NoStock)!;
+                let idx = KinparuTable.NoStock.findIndex(v => v === rtBase);
+                let prevRtBase = KinparuTable.NoStock[idx - 1]!;
+                this.bonusRT = Rand(rtBase.game - prevRtBase.game, prevRtBase.game);
+            }
+            return {
+                name: "はずれ"
+            }
+        }
+        return lot;
     }
     setGamemode(mode: GameMode) {
         console.log(`${this.gameMode} -> ${mode}`);
